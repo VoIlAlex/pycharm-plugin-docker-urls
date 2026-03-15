@@ -4,7 +4,17 @@
     <vendor>voilalex</vendor>
 
     <description>
-        Shows Docker Compose services, container status, and localhost URLs for the current project.
+        <![CDATA[
+        <p>Docker URLs adds a dedicated tool window for inspecting Docker Compose services in the current PyCharm project.</p>
+        <p>It helps you quickly identify which local endpoints are available without switching to the terminal.</p>
+        <ul>
+          <li>Discovers Docker Compose projects inside the current workspace</li>
+          <li>Remembers the selected Compose project per PyCharm project</li>
+          <li>Shows service name, container status, and published localhost URLs</li>
+          <li>Refreshes service state automatically every 5 seconds with manual reload support</li>
+          <li>Sorts services by runtime status and pushes services without published URLs to the bottom</li>
+        </ul>
+        ]]>
     </description>
 
     <depends>com.intellij.modules.platform</depends>
@@ -14,6 +24,7 @@
         <toolWindow
                 id="Docker URLs"
                 anchor="bottom"
+                icon="/icons/toolWindowDocker.svg"
                 factoryClass="com.voilalex.dockerurls.DockerUrlsToolWindowFactory"/>
     </extensions>
 </idea-plugin>
