@@ -117,7 +117,7 @@ class DockerUrlsToolWindowPanel(
                     }
                 }
             })
-            add(createIconButton(AllIcons.Actions.Execute, "Reload service status now") {
+            add(createIconButton(AllIcons.Actions.Refresh, "Reload service status now") {
                 addActionListener { triggerRefresh(force = true) }
             })
         }

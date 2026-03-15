@@ -64,7 +64,10 @@ object DockerComposeLocator {
         })
 
         return composeFiles
-            .sortedBy { root.relativize(it).pathString }
+            .sortedWith(
+                compareBy<Path> { root.relativize(it).pathString.length }
+                    .thenBy { root.relativize(it).pathString }
+            )
             .map { composeFile ->
                 val directory = composeFile.parent
                 val relativeDirectory = root.relativize(directory).pathString.ifBlank { "." }

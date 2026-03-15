@@ -13,24 +13,16 @@ class DockerComposeClient {
     private val json = Json { ignoreUnknownKeys = true }
 
     fun listServices(composeProject: DockerComposeProject): Result<List<DockerServiceRow>> {
-        val commandLine = GeneralCommandLine(
-            "docker",
-            "compose",
-            "-f",
-            composeProject.composeFile.toString(),
-            "ps",
-            "--all",
-            "--format",
-            "json"
-        ).withWorkDirectory(composeProject.directory.toFile())
-
         return runCatching {
-            val output = CapturingProcessHandler(commandLine).runProcess(15_000)
-            if (output.exitCode != 0) {
-                error(output.stderr.ifBlank { "docker compose ps failed with exit code ${output.exitCode}" })
-            }
+            val output = runDockerCommand(
+                composeProject,
+                "ps",
+                "--all",
+                "--format",
+                "json"
+            )
 
-            parseRows(output.stdout)
+            parseRows(output)
                 .sortedWith(
                     compareBy<DockerServiceRow> { it.status.sortOrder }
                         .thenBy { it.serviceName.lowercase() }
@@ -66,7 +58,7 @@ class DockerComposeClient {
             val urls = container.publishers
                 .orEmpty()
                 .asSequence()
-                .filter { it.publishedPort != null && it.protocol.equals("tcp", ignoreCase = true) }
+                .filter { it.publishedPort != null && it.publishedPort > 0 && it.protocol.equals("tcp", ignoreCase = true) }
                 .map { "http://localhost:${it.publishedPort}" }
                 .distinct()
                 .toList()
@@ -78,6 +70,22 @@ class DockerComposeClient {
                 urls = urls
             )
         }
+    }
+
+    private fun runDockerCommand(composeProject: DockerComposeProject, vararg args: String): String {
+        val commandLine = GeneralCommandLine(
+            "docker",
+            "compose",
+            "-f",
+            composeProject.composeFile.toString(),
+            *args
+        ).withWorkDirectory(composeProject.directory.toFile())
+
+        val output = CapturingProcessHandler(commandLine).runProcess(15_000)
+        if (output.exitCode != 0) {
+            error(output.stderr.ifBlank { "docker compose ${args.joinToString(" ")} failed with exit code ${output.exitCode}" })
+        }
+        return output.stdout
     }
 }
 
