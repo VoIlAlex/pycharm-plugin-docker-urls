@@ -1,0 +1,20 @@
+<idea-plugin>
+    <id>com.voilalex.dockerurls</id>
+    <name>Docker URLs</name>
+    <vendor>voilalex</vendor>
+
+    <description>
+        Shows Docker Compose services, container status, and localhost URLs for the current project.
+    </description>
+
+    <depends>com.intellij.modules.platform</depends>
+    <depends>com.intellij.modules.python</depends>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <toolWindow
+                id="Docker URLs"
+                anchor="right"
+                secondary="true"
+                factoryClass="com.voilalex.dockerurls.DockerUrlsToolWindowFactory"/>
+    </extensions>
+</idea-plugin>
