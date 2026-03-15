@@ -35,6 +35,7 @@ import javax.swing.JPanel
 import javax.swing.JTable
 import javax.swing.ListSelectionModel
 import javax.swing.SwingConstants
+import javax.swing.table.TableColumn
 import javax.swing.table.DefaultTableCellRenderer
 
 class DockerUrlsToolWindowPanel(
@@ -210,12 +211,16 @@ class DockerUrlsToolWindowPanel(
         ApplicationManager.getApplication().executeOnPooledThread {
             val result = dockerComposeClient.listServices(composeProject)
             ApplicationManager.getApplication().invokeLater {
+                val selectedServiceName = selectedServiceName()
                 try {
                     result.onSuccess { rows ->
                         tableModel.setRows(rows)
+                        restoreSelectedService(selectedServiceName)
+                        resizeColumnsToContent()
                         footerLabel.text = "Last updated ${LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss"))}"
                     }.onFailure { error ->
                         tableModel.setRows(emptyList())
+                        resizeColumnsToContent()
                         footerLabel.text = error.message ?: "Failed to load docker compose status."
                     }
                 } finally {
@@ -264,6 +269,52 @@ class DockerUrlsToolWindowPanel(
 
     override fun dispose() {
         refreshFuture?.cancel(true)
+    }
+
+    private fun resizeColumnsToContent() {
+        resizeColumn(table.columnModel.getColumn(0), 0, 320)
+        resizeColumn(table.columnModel.getColumn(1), 1, 180)
+    }
+
+    private fun resizeColumn(column: TableColumn, columnIndex: Int, maxWidth: Int) {
+        val headerRenderer = table.tableHeader.defaultRenderer
+        var preferredWidth = headerRenderer
+            .getTableCellRendererComponent(table, column.headerValue, false, false, -1, columnIndex)
+            .preferredSize.width
+
+        for (rowIndex in 0 until table.rowCount) {
+            val renderer = table.getCellRenderer(rowIndex, columnIndex)
+            val component = table.prepareRenderer(renderer, rowIndex, columnIndex)
+            preferredWidth = maxOf(preferredWidth, component.preferredSize.width)
+        }
+
+        column.preferredWidth = (preferredWidth + 16).coerceAtMost(maxWidth)
+    }
+
+    private fun selectedServiceName(): String? {
+        val selectedRow = table.selectedRow
+        if (selectedRow < 0) {
+            return null
+        }
+        return tableModel.rowAt(selectedRow)?.serviceName
+    }
+
+    private fun restoreSelectedService(serviceName: String?) {
+        if (serviceName == null) {
+            table.clearSelection()
+            return
+        }
+
+        val rowIndex = (0 until tableModel.rowCount)
+            .firstOrNull { tableModel.rowAt(it)?.serviceName == serviceName }
+
+        if (rowIndex == null) {
+            table.clearSelection()
+            return
+        }
+
+        table.selectionModel.setSelectionInterval(rowIndex, rowIndex)
+        table.scrollRectToVisible(table.getCellRect(rowIndex, 0, true))
     }
 }
 
