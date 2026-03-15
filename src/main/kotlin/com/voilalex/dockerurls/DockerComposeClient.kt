@@ -25,6 +25,7 @@ class DockerComposeClient {
             parseRows(output)
                 .sortedWith(
                     compareBy<DockerServiceRow> { it.status.sortOrder }
+                        .thenBy { if (it.urls.isEmpty()) 1 else 0 }
                         .thenBy { it.serviceName.lowercase() }
                 )
         }
