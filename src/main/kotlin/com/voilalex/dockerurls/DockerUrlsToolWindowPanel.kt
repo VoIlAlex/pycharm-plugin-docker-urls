@@ -117,9 +117,6 @@ class DockerUrlsToolWindowPanel(
                     }
                 }
             })
-            add(createIconButton(AllIcons.Actions.Refresh, "Rescan Compose projects") {
-                addActionListener { rescanComposeProjects() }
-            })
             add(createIconButton(AllIcons.Actions.Execute, "Reload service status now") {
                 addActionListener { triggerRefresh(force = true) }
             })
