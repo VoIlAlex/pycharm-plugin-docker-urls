@@ -13,8 +13,7 @@
     <extensions defaultExtensionNs="com.intellij">
         <toolWindow
                 id="Docker URLs"
-                anchor="right"
-                secondary="true"
+                anchor="bottom"
                 factoryClass="com.voilalex.dockerurls.DockerUrlsToolWindowFactory"/>
     </extensions>
 </idea-plugin>

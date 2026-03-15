@@ -14,6 +14,7 @@ import kotlin.io.path.pathString
 data class DockerComposeProject(
     val composeFile: Path,
     val directory: Path,
+    val projectName: String,
     val displayName: String
 )
 
@@ -67,13 +68,17 @@ object DockerComposeLocator {
             .map { composeFile ->
                 val directory = composeFile.parent
                 val relativeDirectory = root.relativize(directory).pathString.ifBlank { "." }
+                val projectName = directory.fileName?.toString().orEmpty().ifBlank {
+                    root.fileName?.toString().orEmpty().ifBlank { "root" }
+                }
                 DockerComposeProject(
                     composeFile = composeFile,
                     directory = directory,
+                    projectName = projectName,
                     displayName = if (relativeDirectory == ".") {
-                        composeFile.fileName.toString()
+                        "$projectName (${composeFile.fileName})"
                     } else {
-                        "$relativeDirectory (${composeFile.fileName})"
+                        "$projectName - $relativeDirectory (${composeFile.fileName})"
                     }
                 )
             }

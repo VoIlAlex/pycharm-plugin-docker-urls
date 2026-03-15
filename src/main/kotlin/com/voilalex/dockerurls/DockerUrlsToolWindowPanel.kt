@@ -1,5 +1,6 @@
 package com.voilalex.dockerurls
 
+import com.intellij.icons.AllIcons
 import com.intellij.ide.BrowserUtil
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.ApplicationManager
@@ -19,6 +20,7 @@ import java.awt.BorderLayout
 import java.awt.CardLayout
 import java.awt.Cursor
 import java.awt.FlowLayout
+import java.awt.Insets
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import java.time.LocalTime
@@ -48,7 +50,6 @@ class DockerUrlsToolWindowPanel(
     private val refreshInProgress = AtomicBoolean(false)
     private val cardLayout = CardLayout()
     private val rootPanel = JPanel(cardLayout)
-    private val selectedProjectLabel = JBLabel("No Docker Compose project selected")
     private val footerLabel = JBLabel(" ")
     private val selectionHint = JBTextArea().apply {
         isEditable = false
@@ -108,7 +109,6 @@ class DockerUrlsToolWindowPanel(
     private fun buildMainPanel(): JComponent {
         val panel = JPanel(BorderLayout())
         val toolbar = JPanel(FlowLayout(FlowLayout.LEFT)).apply {
-            add(selectedProjectLabel)
             add(projectComboBox.apply {
                 addActionListener {
                     val selected = selectedItem as? DockerComposeProject ?: return@addActionListener
@@ -117,13 +117,10 @@ class DockerUrlsToolWindowPanel(
                     }
                 }
             })
-            add(JButton("Change Project").apply {
-                addActionListener { showSelectionCard() }
-            })
-            add(JButton("Rescan Projects").apply {
+            add(createIconButton(AllIcons.Actions.Refresh, "Rescan Compose projects") {
                 addActionListener { rescanComposeProjects() }
             })
-            add(JButton("Reload Now").apply {
+            add(createIconButton(AllIcons.Actions.Execute, "Reload service status now") {
                 addActionListener { triggerRefresh(force = true) }
             })
         }
@@ -156,7 +153,6 @@ class DockerUrlsToolWindowPanel(
             discovered.isEmpty() -> {
                 selectedComposeProject = null
                 settings.setSelectedComposeFile(null)
-                selectedProjectLabel.text = "No Docker Compose project selected"
                 footerLabel.text = "No docker-compose.yml or compose.yml files were found under ${project.basePath ?: "this project"}."
                 tableModel.setRows(emptyList())
                 showSelectionCard(emptyState = true)
@@ -181,7 +177,7 @@ class DockerUrlsToolWindowPanel(
         selectionHint.text = if (emptyState) {
             "No Docker Compose projects were found in the current PyCharm project path. Use Rescan after adding one."
         } else {
-            "Select the Docker Compose project to inspect for this PyCharm project."
+            "Select the Docker Compose project name to inspect for this PyCharm project."
         }
         cardLayout.show(rootPanel, "selection")
     }
@@ -196,10 +192,9 @@ class DockerUrlsToolWindowPanel(
     ) {
         selectedComposeProject = composeProject
         settings.setSelectedComposeFile(composeProject.composeFile.toString())
-        selectedProjectLabel.text = "Compose project:"
         projectComboBox.selectedItem = composeProject
         selectionComboBox.selectedItem = composeProject
-        footerLabel.text = "Selected ${composeProject.displayName}"
+        footerLabel.text = "Selected ${composeProject.projectName} from ${composeProject.composeFile.fileName}"
         showMainCard()
         if (triggerRefresh) {
             triggerRefresh(force = true)
@@ -272,6 +267,15 @@ class DockerUrlsToolWindowPanel(
 
     override fun dispose() {
         refreshFuture?.cancel(true)
+    }
+}
+
+private fun createIconButton(icon: javax.swing.Icon, tooltip: String, configure: JButton.() -> Unit): JButton {
+    return JButton(icon).apply {
+        toolTipText = tooltip
+        isFocusPainted = false
+        margin = Insets(2, 2, 2, 2)
+        configure()
     }
 }
 
