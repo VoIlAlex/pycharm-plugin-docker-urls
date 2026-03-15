@@ -7,13 +7,13 @@ import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.ComboBox
 import com.intellij.openapi.ui.Messages
+import com.intellij.openapi.ui.popup.JBPopupFactory
 import com.intellij.ui.JBColor
 import com.intellij.ui.SimpleListCellRenderer
 import com.intellij.ui.awt.RelativePoint
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.components.JBTextArea
-import com.intellij.ui.popup.JBPopupFactory
 import com.intellij.util.concurrency.AppExecutorUtil
 import java.awt.BorderLayout
 import java.awt.CardLayout
@@ -65,7 +65,7 @@ class DockerUrlsToolWindowPanel(
 
     init {
         component = JPanel(BorderLayout())
-        table.selectionMode = ListSelectionModel.SINGLE_SELECTION
+        table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION)
         table.fillsViewportHeight = true
         table.setDefaultRenderer(Any::class.java, ServicesTableRenderer(tableModel))
         installUrlHandler()
@@ -263,7 +263,7 @@ class DockerUrlsToolWindowPanel(
                 val popup = JBPopupFactory.getInstance()
                     .createPopupChooserBuilder(row.urls)
                     .setTitle("Open localhost URL")
-                    .setItemChosenCallback { BrowserUtil.browse(it) }
+                    .setItemChosenCallback { url -> BrowserUtil.browse(url) }
                     .createPopup()
                 popup.show(RelativePoint(event))
             }

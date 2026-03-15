@@ -56,7 +56,7 @@ object DockerComposeLocator {
 
             override fun visitFile(file: Path, attrs: BasicFileAttributes): FileVisitResult {
                 if (file.name in composeFileNames) {
-                    composeFiles += file
+                    composeFiles.add(file)
                 }
                 return FileVisitResult.CONTINUE
             }
